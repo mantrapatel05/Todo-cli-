@@ -1,0 +1,17 @@
+{
+  "name": "todo-cli",
+  "version": "1.0.0",
+  "description": "A simple command-line todo application",
+  "main": "index.js",
+  "scripts": {
+    "test": "node index.js"
+  },
+  "keywords": [
+    "todo",
+    "cli",
+    "node"
+  ],
+  "author": "Mantra",
+  "license": "ISC",
+  "type": "commonjs"
+}
