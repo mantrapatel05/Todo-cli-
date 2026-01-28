@@ -47,22 +47,22 @@ function addTodo(task){
     console.log(`Added: "${task}"`);
 }
 
-function listTodos(){
-    const todos = loadTodos();
+// function listTodos(){
+//     const todos = loadTodos();
 
 
-    if (todos.length == 0){
-        console.log("No todos found. Please add new todos to see them.");
-        return;
-    }
+//     if (todos.length == 0){
+//         console.log("No todos found. Please add new todos to see them.");
+//         return;
+//     }
 
-    console.log("\nYour tasks\n");
-    todos.forEach((todo,idx) => {
-        const status = todo.completed ? 'x' : ' ';
-        console.log(`${idx+1}.[${status}]${todo.task}`);
-        console.log(`id: ${todo.id}`);
-    });
-}
+//     console.log("\nYour tasks\n");
+//     todos.forEach((todo,idx) => {
+//         const status = todo.completed ? 'x' : ' ';
+//         console.log(`${idx+1}.[${status}]${todo.task}`);
+//         console.log(`id: ${todo.id}`);
+//     });
+// }
 
 function completeTodo(id){
     const todos = loadTodos();
@@ -95,19 +95,108 @@ function deleteTodo(id){
 function toggleTodo(id){
     const todos = loadTodos();
 
-    const todo = todos.find(t => t.id != parseInt(id));
+    const todo = todos.find(t => t.id === parseInt(id));
 
     if(!todo){
         console.log("Todo not found!");
         return;
     }
 
-    todo.complete != todo.completed;
+    todo.completed = !todo.completed;
 
     saveTodos(todos);
 
     const state = todo.completed ? "completed!" : "pending";
     console.log(`Toggled: "${todo.task}" -> ${state}`);
+}
+
+function editTodo(id,newTask){
+    const todos = loadTodos();
+
+    const todo = todos.find(t => t.id === parseInt(id));
+
+    if(!todo){
+        console.log("Todo not found!");
+        return;
+    }
+
+    if(!newTask){
+        console.log("Provide a valid task desscription!");
+        return;
+    }
+
+    todo.task = newTask;
+
+    saveTodos(todos);
+    console.log(`Updated todo ${todo}`);
+}
+
+function listTodos(filter = 'all'){
+    let todos = loadTodos();
+
+    if(filter === 'completed'){
+        todos = todos.filter(t => t.completed);
+    }else if(filter === 'pending'){
+        todos = todos.filter(t => !t.completed);
+    }
+
+    if(todos.length === 0){
+        console.log("no todos found!");
+        return;
+    }
+
+    console.log(`\nYour tasks (${filter})\n`);
+    todos.forEach((todo, idx) =>{
+        const status = todo.completed ? 'x' : ' ';
+        console.log(`${idx + 1}.[${status} ${todo.task}]`);
+        console.log(`id: ${todo.id}`);
+    });
+}
+
+function searchTodos(word){
+    const todo = loadTodos();
+    const lower = word.toLowerCase();
+
+    const result = todo.filter(todo=>{
+        return todo.task.toLowerCase().includes(lower);
+    });
+
+    if(result.length === 0){
+        console.log("No todos found!");
+        return;
+    }
+
+    console.log(`Found ${result.length}`);
+    result.forEach(todo=>{
+        console.log(`[${todo.completed ? 'x' : ' '}] ${todo.task}`);
+    });
+}
+
+function clearCompleted(){
+    const todos = loadTodos();
+    const rem = todos.filter(todo => !todo.completed);
+    const deleted = todos.length - rem.length;
+
+    if(deleted === 0){
+        console.log("No todos were deleted!");
+        return;
+    }
+
+    saveTodos(rem);
+    console.log(`Cleared ${deleted} completed todos`);
+}
+
+function statsTodos(){
+    const todos = loadTodos();
+    const total = todos.length;
+    const completed = todos.filter(t => t.completed).length;
+    const rem = total - completed;
+
+    console.log("Todo stats");
+    console.log(`Total : ${total}`);
+    console.log(`Completed: ${completed}`);
+    console.log(`Pending: ${rem}`);
+
 }
 
 const args = process.argv.slice(2);
@@ -124,9 +213,9 @@ switch(command){
         }
         break;
     
-    case 'list':
-        listTodos();
-        break;
+    // case 'list':
+    //     listTodos();
+    //     break;
     
     case 'complete':
         const completeId = args[1];
@@ -153,6 +242,45 @@ switch(command){
         }else{
             toggleTodo(toggleId);
         }
+        break;
+
+    case 'edit':
+        const editId = args[1];
+        const newTask = args.slice(2).join(' ');
+
+        if(!editId || !newTask){
+            console.log('Usage: node index.js edit <id> "new task"');
+        }else{
+            editTodo(editId, newTask);
+        }
+        break;  
+    
+    case 'list':
+        const flag = args[1];
+
+        if(flag === '--completed'){
+            listTodos('completed');
+        }else if(flag === '--pending'){
+            listTodos('pending');
+        }else{
+            listTodos();
+        }
+        break;
+    
+    case 'search':
+        if(!args[1]){
+            console.log('Usage: node index.js search "keyword"');
+            return;
+        }
+        searchTodos(args[1]);
+        break;
+
+    case 'clear':
+        clearCompleted();
+        break;
+    
+    case 'stats':
+        statsTodos();
         break;
 
     default:
